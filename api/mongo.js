@@ -9,4 +9,4 @@ const userSchema = new mongoose.Schema({
   historico: { type: Array, default: [] },
 });
 
-module.exports = mongoose.models.User || mongoose.model("User", userSchema);
+module.exports = mongoose.models.User || mongoose.model("User", userSchema, "users");
