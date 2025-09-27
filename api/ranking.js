@@ -1,13 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("./mongo");
 
-if (!mongoose.connections[0].readyState) {
-  await mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-}
-
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "https://tiagliveira.github.io");
   res.setHeader("Access-Control-Allow-Methods", "GET");
@@ -18,12 +11,20 @@ module.exports = async (req, res) => {
   }
 
   try {
+    if (!mongoose.connections[0].readyState) {
+      await mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+    }
+
     const ranking = await User.find({}, "id nivelMaximo avatar")
       .sort({ nivelMaximo: -1 })
       .limit(10);
+
     res.status(200).json(ranking);
   } catch (err) {
-  console.error("Erro completo:", err);
-  res.status(500).send("Erro ao buscar ranking");
+    console.error("Erro completo:", err);
+    res.status(500).send("Erro ao buscar ranking");
   }
 };
