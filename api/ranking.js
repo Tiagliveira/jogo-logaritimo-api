@@ -23,5 +23,6 @@ module.exports = async (req, res) => {
   } catch (err) {
     console.error("Erro ao buscar ranking:", err.message);
     res.status(500).send("Erro ao buscar ranking");
+    console.error("Erro completo:", err);
   }
 };
