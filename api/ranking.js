@@ -1,10 +1,12 @@
 const mongoose = require("mongoose");
 const User = require("./mongo");
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+if (!mongoose.connections[0].readyState) {
+  await mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+}
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "https://tiagliveira.github.io");
@@ -21,8 +23,7 @@ module.exports = async (req, res) => {
       .limit(10);
     res.status(200).json(ranking);
   } catch (err) {
-    console.error("Erro ao buscar ranking:", err.message);
-    res.status(500).send("Erro ao buscar ranking");
-    console.error("Erro completo:", err);
+  console.error("Erro completo:", err);
+  res.status(500).send("Erro ao buscar ranking");
   }
 };
