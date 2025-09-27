@@ -1,20 +1,27 @@
-const mongoose = require("mongoose");
-const User = require("../mongo");
+import mongoose from "mongoose";
+import User from "../mongo.js"; // ajuste a extensão se necessário
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+let isConnected = false;
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "https://tiagliveira.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   // Preflight
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).send("Método não permitido");
+
+  // Conexão segura com MongoDB
+  if (!isConnected) {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = true;
+  }
 
   const { id, historico } = req.body;
 
@@ -28,7 +35,7 @@ module.exports = async (req, res) => {
   try {
     const resultado = await User.updateOne({ id: idLimpo }, { historico });
 
-    if (resultado.matchedCount === 0) {
+    if (resultado.matchedCount === 0 && resultado.modifiedCount === 0) {
       return res.status(404).send("Usuário não encontrado");
     }
 
@@ -37,4 +44,4 @@ module.exports = async (req, res) => {
     console.error("Erro ao salvar histórico:", err);
     res.status(500).send("Erro interno ao salvar histórico");
   }
-};
+}
